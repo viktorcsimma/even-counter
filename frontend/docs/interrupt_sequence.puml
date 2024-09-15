@@ -1,0 +1,60 @@
+@startuml interrupt_sequence
+
+actor User
+activate User
+
+User -> PreciseOutputViewModel: setPrecisionAsync
+activate PreciseOutputViewModel
+
+PreciseOutputViewModel -> HsCalcStateWrapper: reevalCommandAsync
+activate HsCalcStateWrapper
+
+HsCalcStateWrapper --> evaluationThread
+activate evaluationThread
+HsCalcStateWrapper --> PreciseOutputViewModel /' return '/
+deactivate HsCalcStateWrapper
+PreciseOutputViewModel --> User /' return '/
+deactivate PreciseOutputViewModel
+
+alt successful termination
+    evaluationThread -> PreciseOutputViewModel: onFinish
+    activate PreciseOutputViewModel
+    return
+    deactivate PreciseOutputViewModel
+
+else interruption
+    User -> PreciseOutputViewModel: interruptEvaluation
+    activate PreciseOutputViewModel
+    PreciseOutputViewModel -> HsCalcStateWrapper: interruptEvaluation
+    activate HsCalcStateWrapper
+    HsCalcStateWrapper --> evaluationThread: acornInterruptEvaluation
+    return
+    return
+    evaluationThread -> PreciseOutputViewModel: onFinish
+    activate PreciseOutputViewModel
+    return
+    deactivate PreciseOutputViewModel
+    deactivate evaluationThread
+end
+
+
+
+/'
+activate A
+
+A -> B: << createRequest >>
+activate B
+
+B -> C: DoWork
+activate C
+C --> B: WorkDone
+destroy C
+
+B --> A: RequestCreated
+deactivate B
+
+A -> User: Done
+deactivate A
+'/
+
+@enduml

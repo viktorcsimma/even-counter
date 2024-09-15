@@ -1,0 +1,11 @@
+Main
+*.hs
+*.o
+*.hi
+*_stub.h
+
+# these ar the ones we write directly in Haskell,
+# for the sake of Cabal or the C preprocessor
+!Main.hs
+!Platform.hs
+!TestMain.hs
