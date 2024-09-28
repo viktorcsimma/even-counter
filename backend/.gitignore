@@ -16,10 +16,7 @@
 build.ninja
 
 # CMake output
-/hs/
-/hi/
-/obj/
-/stub/
+/build
 /AcornShell
 /AcornShell.exe
 /libAcorn.a
