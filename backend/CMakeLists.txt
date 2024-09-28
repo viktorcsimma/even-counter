@@ -24,13 +24,30 @@ set_target_properties(AcornShell PROPERTIES
 
 # The library needs a -threaded option so as to be able to interrupt a thread from another by a foreign call.
 set(CMAKE_Agda_CREATE_STATIC_LIBRARY
-      "agda2hs ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda"
-      "ghc -threaded --make -i${CMAKE_CURRENT_SOURCE_DIR}/src -staticlib -fPIC -optl-pthread -optl-static -o ${CMAKE_CURRENT_BINARY_DIR}/libAcorn.a ${CMAKE_CURRENT_SOURCE_DIR}/src/All.hs ${CMAKE_CURRENT_SOURCE_DIR}/src/acornInterruptEvaluation.c"
+      "agda2hs ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda -o ${CMAKE_CURRENT_BINARY_DIR}/build/hs"
+      # we have to let ghc also find those files in src that are already written in Haskell
+      "ghc -threaded --make \
+          -i${CMAKE_CURRENT_BINARY_DIR}/build/hs:${CMAKE_CURRENT_SOURCE_DIR}/src \
+          -hidir ${CMAKE_CURRENT_BINARY_DIR}/build/hi -odir ${CMAKE_CURRENT_BINARY_DIR}/build/o -stubdir ${CMAKE_CURRENT_BINARY_DIR}/build/stub \
+          -staticlib -fPIC -optl-pthread -optl-static \
+          -o ${CMAKE_CURRENT_BINARY_DIR}/libAcorn.a \
+          ${CMAKE_CURRENT_BINARY_DIR}/build/hs/All.hs ${CMAKE_CURRENT_SOURCE_DIR}/src/acornInterruptEvaluation.c"
 )
 set(CMAKE_Agda_LINK_EXECUTABLE
-      "agda2hs ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda"
-      "ghc --make -i${CMAKE_CURRENT_SOURCE_DIR}/src -o ${CMAKE_CURRENT_BINARY_DIR}/AcornShell ${CMAKE_CURRENT_SOURCE_DIR}/src/Main.hs"
+      "agda2hs ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda -o ${CMAKE_CURRENT_BINARY_DIR}/build/hs"
+      # we have to let ghc also find those files in src that are already written in Haskell
+      "ghc --make \
+          -i${CMAKE_CURRENT_BINARY_DIR}/build/hs:${CMAKE_CURRENT_SOURCE_DIR}/src \
+          -hidir ${CMAKE_CURRENT_BINARY_DIR}/build/hi -odir ${CMAKE_CURRENT_BINARY_DIR}/build/o -stubdir ${CMAKE_CURRENT_BINARY_DIR}/build/stub \
+          -o ${CMAKE_CURRENT_BINARY_DIR}/AcornShell \
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/Main.hs"
 )
+# we provide for CMake to erase these on cleaning
+file (GLOB_RECURSE CLEAN_FILES LIST_DIRECTORIES true "${CMAKE_CURRENT_BINARY_DIR}/build/*")
+set_target_properties(Acorn
+    PROPERTIES ADDITIONAL_CLEAN_FILES "${CLEAN_FILES}")
+set_target_properties(AcornShell
+    PROPERTIES ADDITIONAL_CLEAN_FILES "${CLEAN_FILES}")
 
 # preparing the library to be used by other projects
 # make cache variables for install destinations
