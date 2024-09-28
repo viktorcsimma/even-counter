@@ -1,9 +1,80 @@
 cmake_minimum_required (VERSION 3.16)
 
+project(AcornCalc)
+set(PROJECT_VERSION 0.1)
+set(PROJECT_VERSION_MAJOR 0)
+set(PROJECT-NAME_VERSION_MINOR 1)
+
+include(GNUInstallDirs)
+
+find_package(Catch2 3 REQUIRED)
+
+# if this is compiled from the common parent project,
+# we can simply add a dependency (see later)
+# otherwise:
+if(NOT DEFINED NOT_TOP_LEVEL)
+    find_package(Acorn 0.1 REQUIRED)
+endif()
+
+# for Qt
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets LinguistTools)
+
+
 set(TS_FILES src/View/calc_en_GB.ts)
 
-add_dependencies(calc Acorn)
-add_dependencies(test Acorn)
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(calc
+        MANUAL_FINALIZATION
+        ""
+
+
+        include/View/PrimaryLineEdit.h
+        src/View/PrimaryLineEdit.cpp
+        src/View/HistoryItemWidget.ui
+        include/View/HistoryItemWidget.h
+        src/View/HistoryItemWidget.cpp
+        src/View/PreciseOutputWindow.ui
+        include/View/PreciseOutputWindow.h
+        src/View/PreciseOutputWindow.cpp
+        assets/busy_indicator.gif
+
+
+
+
+    )
+# Define target properties for Android with Qt 6 as:
+#    set_property(TARGET calc APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
+# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
+
+    qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+else()
+    if(ANDROID)
+        add_library(calc SHARED
+            ""
+        )
+# Define properties for Android with Qt 5 after find_package() calls as:
+#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+    else()
+        add_executable(calc
+            ""
+        )
+    endif()
+
+    qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+endif()
+
+# this is a simple terminal program
+add_executable(test "")
 
 # afterwards:
 
@@ -16,12 +87,15 @@ target_link_libraries(calc PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 target_link_libraries(test PRIVATE Catch2::Catch2)
 
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:${BACKEND_DIR}")
-
-# target_link_libraries(calc PRIVATE ${BACKEND_DIR}/libAcorn.a)
-target_include_directories(calc PRIVATE "${BACKEND_DIR}/include")
-target_link_libraries(test PRIVATE Acorn::Acorn)
-target_include_directories(test PRIVATE Acorn::include)
+if(DEFINED NOT_TOP_LEVEL)
+    add_dependencies(calc Acorn)
+    add_dependencies(test Acorn)
+    target_link_libraries(calc PRIVATE Acorn)
+    target_link_libraries(test PRIVATE Acorn)
+else()
+    target_link_libraries(calc PRIVATE Acorn::Acorn)
+    target_link_libraries(test PRIVATE Acorn::Acorn)
+endif()
 
 # For some reason, on Windows, Interaction.o gets corrupted when copied into the library;
 # so it has to be included separately.
@@ -31,6 +105,8 @@ if("Windows" STREQUAL ${CMAKE_SYSTEM_NAME})
   target_link_libraries(calc PRIVATE "${CMAKE_INSTALL_PREFIX}/../Acorn/lib/Interaction.o")
   target_link_libraries(test PRIVATE "${CMAKE_INSTALL_PREFIX}/../Acorn/lib/Interaction.o")
 endif()
+
+# Adding include headers
 
 target_include_directories(calc
                            PUBLIC
