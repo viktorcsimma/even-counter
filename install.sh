@@ -1,10 +1,15 @@
 #!/bin/sh
 
+# An installation script of the agda2hs SDK for Ubuntu/Debian.
+# Tested on Ubuntu 24.04.
+# Installs GHC, agda2hs, Ninja and CMake;
+# then builds Qt from source with the necessary libraries and options.
+
 # NOTE: for me, this was needed for Qt:
 # sudo apt update
 # sudo apt upgrade
 # sudo apt install libclang-17-dev
-# but then on Ubuntu 24, it was libclang-18-dev... huh
+# but then on Ubuntu 24.04, it was libclang-18-dev... huh
 
 NINJA_VERSION=1.12.1
 NINJA_URL="https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip"

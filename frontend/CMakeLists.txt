@@ -137,8 +137,8 @@ elseif("Windows" STREQUAL ${CMAKE_SYSTEM_NAME})
   target_link_options(test PRIVATE -pthread -fno-PIC)
   # as flags, they would be added to the beginning of the command, where they get optimised out
   # see the documentation of ld
-  target_link_libraries(calc PRIVATE ntdll rpcrt4 dbghelp ucrt msvcrt)
-  target_link_libraries(test PRIVATE ws2_32 ntdll rpcrt4 dbghelp ucrt winmm)
+  target_link_libraries(calc PRIVATE ws2_32 winmm ntdll rpcrt4 dbghelp ucrt msvcrt)
+  target_link_libraries(test PRIVATE ws2_32 winmm ntdll rpcrt4 dbghelp ucrt)
 else()
   message( FATAL_ERROR "Unsupported operating system: ${CMAKE_SYSTEM_NAME}" )
 endif()

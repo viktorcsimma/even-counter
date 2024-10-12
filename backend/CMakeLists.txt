@@ -22,9 +22,16 @@ set_target_properties(AcornShell PROPERTIES
   LINKER_LANGUAGE Agda
 )
 
+# for solving encoding problems on Windows
+if("Windows" STREQUAL ${CMAKE_SYSTEM_NAME})
+    set(WINDOWS_ENCODING_COMMAND "CHCP 65001")
+endif()
+
 # The library needs a -threaded option so as to be able to interrupt a thread from another by a foreign call.
 set(CMAKE_Agda_CREATE_STATIC_LIBRARY
-      "agda2hs ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda -o ${CMAKE_CURRENT_BINARY_DIR}/build/hs"
+      "${WINDOWS_ENCODING_COMMAND}"
+      # TODO: -v2 output gets hidden in Qt Creator unless an error occurs; get it shown
+      "agda2hs -v2 ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda -o ${CMAKE_CURRENT_BINARY_DIR}/build/hs"
       # we have to let ghc also find those files in src that are already written in Haskell
       "ghc -threaded --make \
           -i${CMAKE_CURRENT_BINARY_DIR}/build/hs:${CMAKE_CURRENT_SOURCE_DIR}/src \
@@ -34,7 +41,8 @@ set(CMAKE_Agda_CREATE_STATIC_LIBRARY
           ${CMAKE_CURRENT_BINARY_DIR}/build/hs/All.hs ${CMAKE_CURRENT_SOURCE_DIR}/src/acornInterruptEvaluation.c"
 )
 set(CMAKE_Agda_LINK_EXECUTABLE
-      "agda2hs ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda -o ${CMAKE_CURRENT_BINARY_DIR}/build/hs"
+      "${WINDOWS_ENCODING_COMMAND}"
+      "agda2hs -v2 ${CMAKE_CURRENT_SOURCE_DIR}/src/All.agda -o ${CMAKE_CURRENT_BINARY_DIR}/build/hs"
       # we have to let ghc also find those files in src that are already written in Haskell
       "ghc --make \
           -i${CMAKE_CURRENT_BINARY_DIR}/build/hs:${CMAKE_CURRENT_SOURCE_DIR}/src \
