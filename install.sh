@@ -2,23 +2,15 @@
 
 # An installation script of the agda2hs SDK for Ubuntu/Debian.
 # Tested on Ubuntu 24.04.
-# Installs GHC, agda2hs, Ninja and CMake;
-# then builds Qt from source with the necessary libraries and options.
+# Installs GHCup, agda2hs and Qt with the necessary libraries and options
+# into a directory provided by the user.
 
 # NOTE: for me, this was needed for Qt:
-# sudo apt update
-# sudo apt upgrade
-# sudo apt install libclang-17-dev
-# but then on Ubuntu 24.04, it was libclang-18-dev... huh
+echo "Make sure you have the correct version of libclang installed (libclang-17-dev for Ubuntu 20.04 and libclang-18-dev for Ubuntu 24.04)."
+echo -n "Press Enter to continue."
+read
 
-NINJA_VERSION=1.12.1
-NINJA_URL="https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip"
-CMAKE_VERSION=3.30.3
-CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
-QT_VERSION=6.7.2
-QT_URL="https://download.qt.io/official_releases/qt/6.7/${QT_VERSION}/single/qt-everywhere-src-${QT_VERSION}.tar.xz"
-QT_CREATOR_VERSION=14.0.1
-QT_CREATOR_URL="https://download.qt.io/official_releases/qtcreator/14.0/${QT_CREATOR_VERSION}/qt-creator-opensource-linux-x86_64-${QT_CREATOR_VERSION}.run"
+QT_VERSION=6.7.3
 
 is_done=1  # false
 while [ 0 -ne "$is_done" ]; do
@@ -58,51 +50,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 git clone https://github.com/viktorcsimma/agda2hs
 cd agda2hs
 git checkout have-it-both-ways
-~/.ghcup/bin/cabal install
+~/.ghcup/bin/cabal install --overwrite-policy=always
 
-# installing Ninja
-cd "$SDK_PATH"
-mkdir tools; mkdir tools/bin
-curl -L "$NINJA_URL" > /tmp/ninja.zip
-unzip /tmp/ninja.zip -d "$SDK_PATH/tools/ninja"
-# this creates a binary called "ninja" in "$SDK_PATH/tools/ninja"
-cd "$SDK_PATH/tools/bin"
-ln -s "$SDK_PATH/tools/ninja/ninja"
-rm /tmp/ninja.zip
+# this is needed in Qt component names
+# e.g. 673 for 6.7.3
+version_without_dots=`echo "$QT_VERSION" | sed 's/\.//g'`
 
-# installing CMake
-cd "$SDK_PATH/tools"
-curl -L "$CMAKE_URL" > /tmp/cmake.sh
-yes | sh /tmp/cmake.sh
-rm /tmp/cmake.sh
-# creating symlinks in tools/bin
-cd "${SDK_PATH}/tools/cmake-${CMAKE_VERSION}-linux-x86_64/bin/"
-for filename in *; do
-    ln -s "$PWD/$filename" "${SDK_PATH}/tools/bin/$filename"
-done
-
-# adding all those symlinks to PATH
-# (beware: this is only for the current session!)
-export PATH="$PATH:${SDK_PATH}/tools/bin"
-
-# installing Qt from source
-# /tmp has a limited capacity;
-# so we do this under $SDK_PATH
-cd "$SDK_PATH"
-# -L is for following redirects
-curl -L "$QT_URL" > qt.tar.xz
-tar -xvf qt.tar.xz
-cd "$SDK_PATH/tools"
-mkdir qt-build; cd qt-build
-"$SDK_PATH/qt-everywhere-src-${QT_VERSION}/configure" -static -bundled-xcb-xinput -skip qtquick3d -skip qt3d -skip qtcharts -skip qtdatavis3d -skip qtgraphs -skip qtwebsockets -skip qthttpserver -skip qtserialport -skip qtpositioning -skip qtlocation -skip qtwebchannel -skip qtwebengine -skip qtnetworkauth -skip qtquick3dphysics -skip qtremoteobjects -skip qtsensors -skip qtserialbus -skip qtspeech -skip qtwebview
-cmake --build . --parallel
-sudo cmake --install . # I could not manage without it – what about the -prefix option when configuring?  
-
-# installing Qt Creator through a binary installer
-curl -L "$QT_CREATOR_URL" > /tmp/qt_creator.run
-chmod u+x /tmp/qt_creator.run
-/tmp/qt_creator.run
-# I also needed sudo apt install libxcb-cursor0 for this to work
-
-# here, I could only add the Qt installation through the GUI
-
+curl --proto '=https' --tlsv1.2 -sSf https://d13lb3tujbc8s0.cloudfront.net/onlineinstallers/qt-online-installer-linux-x64-4.8.1.run > '/tmp/qt.run'
+chmod u+x /tmp/qt.run
+/tmp/qt.run --root "$SDK_PATH/Qt" --no-default-installations --accept-licenses install "qt.qt6.${version_without_dots}.linux_gcc_64" "qt.qt6.${version_without_dots}.qtwaylandcompositor" "qt.tools.ninja" "qt.tools.cmake" "qt.tools.qtcreator_gui"
