@@ -1,6 +1,6 @@
 -- Implementation of platform-specific functions
 -- for Unix-like systems.
-module Shell.Platform.Posix where
+module Platform.Posix where
 
 {-# FOREIGN AGDA2HS {-# LANGUAGE ScopedTypeVariables #-} #-}
 

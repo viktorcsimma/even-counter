@@ -4,49 +4,66 @@
 module Main where
 
 import Data.Char (isDigit)
+import Data.IORef
 import Data.List (isPrefixOf)
 import Data.Text (unpack, strip, pack)
 import System.IO
+import Text.Read (readMaybe)
 
-import Implementation.Dyadic
-import RealTheory.AppRational
-import RealTheory.Completion
-import Shell.CalcState
-import Shell.Interaction
+import AppState
+import Interaction
 
 import Control.Concurrent (myThreadId)
 import Control.DeepSeq
 
--- The precision used at the start.
--- TODO: read this from command line arguments
-defaultPrecision :: Int
-defaultPrecision = 100
+-- Command keywords.
+aDD_KEYWORD :: String
+aDD_KEYWORD = "add"
+iNCFOR_KEYWORD :: String
+iNCFOR_KEYWORD = "incfor"
+eXIT_KEYWORD :: String
+eXIT_KEYWORD = "exit"
 
 main :: IO ()
 main = do
-  putStrLn $ "Welcome to the AcornShell interpreter.\nThe default precision is " ++ show defaultPrecision ++ " digits (use \":setprec\" to change this).\nType \":q\" to quit."
-  calcState <- emptyCalcState
-  (prompt :: CalcState (C Dyadic) -> Int -> IO ()) calcState 100
+  putStrLn $ "Welcome.\nType \"" ++ aDD_KEYWORD ++ " x\" to add an even number x to the counter; \"" ++ iNCFOR_KEYWORD ++ " n\" to increment continuously for n seconds; or \"" ++ eXIT_KEYWORD ++ "\" to exit."
+  appState <- zeroAppState
+  prompt appState
 
 -- the second parameter is the precision to apply
-prompt :: (AppRational aq, NFData aq) => CalcState (C aq) -> Int -> IO ()
-prompt calcState precision = do
-  putStr "acorn> "
+prompt :: AppState Integer -> IO ()
+prompt appState = do
+  counter <- readIORef $ counterRef appState
+  putStr $ "counter: " ++ show counter ++ "> "
   hFlush stdout   -- so that it gets printed immediately
   command <- (unpack . strip . pack) <$> getLine
-  if command == ":q"
-  then return ()
-  else if ":setprec " `isPrefixOf` command
+  if command == eXIT_KEYWORD
+  then do {putStrLn "Bye."; return ()}
+  else if (aDD_KEYWORD ++ " ") `isPrefixOf` command
   then do
-    let num = (unpack . strip . pack) $ drop 9 command
+    let num = (unpack . strip . pack) $ drop (length aDD_KEYWORD + 1) command
+    case (readMaybe num :: Maybe Integer) of
+      Just parsedInput -> do
+        result <- incrementWithInt' appState parsedInput
+        if -1 == result
+        then do
+          putStrLn "Value provided was not even. Try again."
+          prompt appState
+        else prompt appState
+      Nothing -> do
+        putStrLn "Invalid syntax for :add – have you written the number correctly?"
+        prompt appState
+  else if (iNCFOR_KEYWORD ++ " ") `isPrefixOf` command
+  then do
+    let num = (unpack . strip . pack) $ drop (length iNCFOR_KEYWORD + 1) command
     if all isDigit num
     then do
-      -- call it with the new precision
-      prompt calcState (read num)
+      result <- increaseContinuouslyInt' appState (read num)
+      if -1 == result then do {putStrLn "Interrupted."; prompt appState}
+      else prompt appState
     else do
-      putStrLn "Invalid syntax for :setprec – have you written the number correctly?"
-      prompt calcState precision
+      putStrLn "Invalid syntax for :incfor – have you written the number correctly?"
+      prompt appState
   else do
-    answer <- execCommand' calcState command precision
-    putStrLn answer
-    prompt calcState precision
+    putStrLn "Unknown command. Try again."
+    prompt appState

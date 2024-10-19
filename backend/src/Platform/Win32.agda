@@ -1,7 +1,7 @@
 -- Implementation of platform-specific functions
 -- for Windows.
 
-module Shell.Platform.Win32 where
+module Platform.Win32 where
 
 {-# FOREIGN AGDA2HS {-# LANGUAGE ScopedTypeVariables #-} #-}
 
