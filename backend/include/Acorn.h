@@ -8,41 +8,29 @@ extern "C" {
 
 // from the FFI
 
-// Initialises a CalcState with base type Dyadic
+// Initialises an AppState with base type Dyadic
 // and returns a StablePtr to it.
-extern HsStablePtr initCalcDyadic(void);
+extern HsStablePtr initAppInt(void);
 
-// Initialises a CalcState with base type Rational
-// and returns a StablePtr to it.
-extern HsStablePtr initCalcRational(void);
+// Returns the counter value stored in the AppState.
+extern int getCounterValueInt(HsStablePtr appState);
 
-// Executes a command with the current state of the CalcState object supplied
-// and returns a pointer to the output in a C string.
-// Remember that this has to be freed on the C side.
-extern HsPtr execCommandDyadic(HsStablePtr calcState, HsPtr command, HsInt32 precision);
+// Increases the value of the counter with the given number.
+// Returns -1 if the value with which to increment is odd (in which case, it leaves the counter value unchanged);
+// and 0 on success.
+extern int incrementWithInt(HsStablePtr appState, int toAdd);
 
-// Executes a command with the current state of the CalcState object supplied
-// and returns a pointer to the output in a C string.
-// Remember that this has to be freed on the C side.
-extern HsPtr execCommandRational(HsStablePtr calcState, HsPtr command, HsInt32 precision);
-
-// Reevaluates the last result with the given precision
-// and returns a pointer to the output in a C string.
-// Remember that this has to be freed on the C side.
-extern HsPtr reevalCommandDyadic(HsStablePtr calcState, HsInt32 precision);
-
-// Reevaluates the last result with the given precision
-// and returns a pointer to the output in a C string.
-// Remember that this has to be freed on the C side.
-extern HsPtr reevalCommandRational(HsStablePtr calcState, HsInt32 precision);
+// Increases the counter by 2 every second
+// for the given number of seconds
+// or until getting interrupted.
+// Returns -1 if interrupted and 0 otherwise.
+// This shows how interruptible calculations
+// can be implemented.
+extern int increaseContinuouslyInt(HsStablePtr appState, int duration);
 
 // Frees the StablePtr to the CalcState object,
 // as this could not be done from the C side.
-extern void destructCalcDyadic(HsStablePtr calcState);
-
-// Frees the StablePtr to the CalcState object,
-// as this could not be done from the C side.
-extern void destructCalcRational(HsStablePtr calcState);
+extern void destructAppInt(HsStablePtr calcState);
 
 // This is written by ourselves in src/acornInterruptEvaluation.c.
 // It interrupts a running calculation

@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
         // the HsCalcStateWrapper instance
         // (and this way, the Haskell CalcState object)
         // is also created.
-        MainViewModel mainViewModel(DyadicBase, 10);
+        MainViewModel mainViewModel;
 
         QApplication a(argc, argv);
 

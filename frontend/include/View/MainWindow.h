@@ -21,9 +21,17 @@ public:
     ~MainWindow();
 
 public slots:
-    void enterClicked();
-    void settingsButtonClicked();
-    void preciseOutputButtonClicked();
+    void addButtonClicked();
+    void asyncButtonClicked();
+    // Called by the asyncEnded() signal.
+    // The signal-slot mechanism ensures
+    // that this always runs on the main thread.
+    void onAsyncEnded();
+
+signals:
+    // Emitted by the calculation thread
+    // when it finishes.
+    void asyncEnded();
 
 private:
     Ui::MainWindow *ui;
@@ -33,7 +41,10 @@ private:
     // mode changes are achieved by changing the HsCalcStateWrapper instance under the view model.
     MainViewModel& viewModel;
 
-    // Returns the number of current history items.
-    int numberOfHistoryItems() const;
+    // Called when trying to add an odd number.
+    // Gives the spin box a red color and a tooltip.
+    void setError();
+    // Returns the spin box to its normal state.
+    void unsetError();
 };
 #endif // MAINWINDOW_H

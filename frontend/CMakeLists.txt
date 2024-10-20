@@ -35,21 +35,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(calc
         MANUAL_FINALIZATION
         ""
-
-
-        include/View/PrimaryLineEdit.h
-        src/View/PrimaryLineEdit.cpp
-        src/View/HistoryItemWidget.ui
-        include/View/HistoryItemWidget.h
-        src/View/HistoryItemWidget.cpp
-        src/View/PreciseOutputWindow.ui
-        include/View/PreciseOutputWindow.h
-        src/View/PreciseOutputWindow.cpp
         assets/busy_indicator.gif
-
-
-
-
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET calc APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

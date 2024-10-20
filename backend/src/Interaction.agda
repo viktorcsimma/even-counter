@@ -46,6 +46,13 @@ foreign export ccall initAppInt :: IO (StablePtr (AppState Integer))
 -- initAppDouble :: IO (StablePtr (AppState Double))
 -- ...
 
+-- Returns the current counter value.
+getCounterValue :: Num a => StablePtr (AppState a) -> IO a
+getCounterValue ptr = readIORef =<< (counterRef <$> deRefStablePtr ptr)
+getCounterValueInt :: StablePtr (AppState Integer) -> IO CInt
+getCounterValueInt ptr = fromIntegral <$> getCounterValue ptr
+foreign export ccall getCounterValueInt :: StablePtr (AppState Integer) -> IO CInt
+
 -- Increases the value of the counter with the given number.
 -- Returns -1 if the value with which to increment is odd (in which case, it leaves the counter value unchanged);
 -- and 0 on success.
