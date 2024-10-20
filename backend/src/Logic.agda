@@ -7,7 +7,7 @@ module Logic where
 
 open import Agda.Builtin.Unit
 open import Agda.Builtin.Bool
-open import Agda.Builtin.Nat
+open import Agda.Builtin.Nat hiding (_+_; _*_; _-_)
 open import Agda.Builtin.Int
 open import Agda.Builtin.Equality
 
@@ -16,6 +16,9 @@ open import Haskell.Prim.Either
 open import Agda.Builtin.FromString     -- so that we can use string literals
 open import Haskell.Prim.String
 open import Haskell.Prim using (if_then_else_)
+
+-- and this for using Num operators with integers too
+open import Haskell.Prim.Num
 
 open import Tool.ErasureProduct
 
@@ -57,7 +60,7 @@ symm refl = refl
 
 -- A proof that the sum of two even integers
 -- is also even.
-@0 intSumIsEven : (a b : Int) -> @0 {EvenInt a} -> @0 {EvenInt b} -> EvenInt (addInteger a b)
+@0 intSumIsEven : (a b : Int) -> @0 {EvenInt a} -> @0 {EvenInt b} -> EvenInt (a + b)
 intSumIsEven (pos m) (pos n) {em} {en} = natSumIsEven m n {em} {en}
 -- here, the pattern matchings in the definitions of addInteger and ltNat might help
 intSumIsEven (pos zero) (negsuc (suc n)) {_} {en} = en
@@ -116,16 +119,10 @@ private
   addEvenNats n m {en} {em} = n + m :&: natSumIsEven n m {en} {em}
   {-# COMPILE AGDA2HS addEvenNats #-}
 
-  -- In order to be able to use addInteger here:
-  {-# FOREIGN AGDA2HS
-  addInteger :: Integer -> Integer -> Integer
-  addInteger = (+)
-  #-}
-
   -- Adding integers that are guaranteed to be even;
   -- returning the result along with a proof that it is also even.
   addEvenInts : (x y : Int) -> @0 {EvenInt x} -> @0 {EvenInt y} -> Σ0 Int EvenInt
-  addEvenInts x y {ex} {ey} = addInteger x y :&: intSumIsEven x y {ex} {ey}
+  addEvenInts x y {ex} {ey} = x + y :&: intSumIsEven x y {ex} {ey}
   {-# COMPILE AGDA2HS addEvenInts #-}
 
 -- Returns an error message in Left if either of the two parameters is odd;

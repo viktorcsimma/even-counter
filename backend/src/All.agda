@@ -17,14 +17,14 @@ import Tool.Cheat
 import Tool.PropositionalEquality
 import Tool.Relation
 -- this does not have a .agda file
--- import Shell.Platform
+-- import Platform
 import Platform.Win32
 import Platform.Posix
 -- the tests;
 -- they only get here to be checked by the typechecker,
 -- but we do not want GHC to compile the empty files generated
--- import Test.Parser
--- import Test.Haskell.Parser
+import Test.Parity
+import Test.Haskell.Parity
 
 -- And now, we also copy them into the Haskell source;
 -- this way, we can compile everything by compiling All.hs.

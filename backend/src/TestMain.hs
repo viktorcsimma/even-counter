@@ -8,10 +8,10 @@ module Main where
 import System.Exit
 import Test.QuickCheck
 
-import Test.Haskell.Parser
+import Test.Haskell.Parity
 
 -- All modules' testAll functions will be called here.
 main :: IO ()
 main = do
-  success <- parserTestAll
+  success <- parityTestAll
   if success then exitSuccess else exitFailure
