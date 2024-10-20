@@ -7,16 +7,8 @@ description:
 
 -- Ouch... these need to be listed.
 extra-source-files:  acorn.agda-lib,
-                     src/All.agda,
-                     src/Algebra/*.agda,
-                     src/Function/*.agda,
-                     src/HaskellInstance/*.agda,
-                     src/Implementation/*.agda,
-                     src/Operator/*.agda,
-                     src/RealTheory/*.agda,
-                     src/RealTheory/Instance/*.agda,
-                     src/Shell/*.agda,
-                     src/Shell/Platform/*.agda,
+                     src/*.agda
+                     src/Platform/*.agda,
                      src/Test/*.agda,
                      src/Test/Haskell/*.agda,
                      src/Tool/*.agda
@@ -43,100 +35,24 @@ library
   elif os(linux) || os(darwin)
     build-depends:     unix >= 2.8
   hs-source-dirs:      src
-  autogen-modules:     Operator.Abs,
-                       Operator.Pow,
-                       Operator.ExactShift,
-                       Operator.Cast,
-                       Operator.ShiftL,
-                       Operator.Decidable,
-                       Operator.Shift,
+  -- unfortunately, they all have to be listed here... twice.
+  autogen-modules:     All,
+                       Logic,
+                       AppState,
+                       Interaction,
+                       Tool.ErasureProduct
+  exposed-modules:     All,
+                       Logic,
+                       AppState,
+                       Interaction,
                        Tool.ErasureProduct,
-                       Tool.Stream,
-                       Tool.Witness,
-                       HaskellInstance.Show,
-                       HaskellInstance.NFData,
-                       Algebra.SemiRing,
-                       Algebra.Setoid,
-                       Algebra.Ring,
-                       Algebra.Order,
-                       Algebra.Field,
-                       RealTheory.Completion,
-                       RealTheory.Instance.Pow,
-                       RealTheory.Instance.Cast,
-                       RealTheory.AppRational,
-                       RealTheory.MetricSpace,
-                       RealTheory.Real,
-                       RealTheory.Continuity,
-                       Shell.Exp,
-                       Shell.Evaluation,
-                       Shell.Statement,
-                       Shell.CalcState,
-                       Shell.Parser,
-                       Shell.Value,
-                       Shell.Interaction,
-                       -- this is written directly in a .hs
-                       -- to be able to use the C preprocessor
-                       -- Shell.Platform,
-                       Implementation.Frac,
-                       Implementation.Decimal,
-                       Implementation.Rational,
-                       Implementation.Int,
-                       Implementation.Nat,
-                       Implementation.Dyadic,
-                       Function.AlternatingSeries,
-                       Function.Exp,
-                       Function.SquareRoot,
-                       Function.Trigonometric,
-                       All
-  exposed-modules:     Operator.Abs,
-                       Operator.Pow,
-                       Operator.ExactShift,
-                       Operator.Cast,
-                       Operator.ShiftL,
-                       Operator.Decidable,
-                       Operator.Shift,
-                       Tool.ErasureProduct,
-                       Tool.Stream,
-                       Tool.Witness
-                       HaskellInstance.Show,
-                       HaskellInstance.NFData,
-                       Algebra.SemiRing,
-                       Algebra.Setoid,
-                       Algebra.Ring,
-                       Algebra.Order,
-                       Algebra.Field,
-                       RealTheory.Completion,
-                       RealTheory.Instance.Pow,
-                       RealTheory.Instance.Cast,
-                       RealTheory.AppRational,
-                       RealTheory.MetricSpace,
-                       RealTheory.Real,
-                       RealTheory.Continuity,
-                       Shell.Exp,
-                       Shell.Evaluation,
-                       Shell.Statement,
-                       Shell.CalcState,
-                       Shell.Parser,
-                       Shell.Value,
-                       Shell.Interaction,
-                       Shell.Platform,
-                       Implementation.Frac,
-                       Implementation.Decimal,
-                       Implementation.Rational,
-                       Implementation.Int,
-                       Implementation.Nat,
-                       Implementation.Dyadic,
-                       Function.AlternatingSeries,
-                       Function.Exp,
-                       Function.SquareRoot,
-                       Function.Trigonometric,
-                       All
+                       Platform
   if os(windows)
-    autogen-modules:   Shell.Platform.Win32
-    exposed-modules:   Shell.Platform.Win32
+    autogen-modules:   Platform.Win32
+    exposed-modules:   Platform.Win32
   elif os(linux) || os(darwin)
-    autogen-modules:   Shell.Platform.Posix
-    exposed-modules:   Shell.Platform.Posix
+    autogen-modules:   Platform.Posix
+    exposed-modules:   Platform.Posix
   default-language:    GHC2021
   -- for interrupting the calculation thread
   -- with a foreign call
@@ -167,7 +83,8 @@ test-suite AcornQuickCheck
   type:                exitcode-stdio-1.0
   hs-source-dirs:      src
   main-is:             TestMain.hs
-  other-modules:       Test.Haskell.Parser
+  autogen-modules:     Test.Haskell.Parity
+  other-modules:       Test.Haskell.Parity
   build-depends:       base     >= 4.13    && < 4.20,
                        containers,
                        text,
