@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 # the language is given so that GNUInstallDirs knows where to install
 project(Acorn)
 
-add_library(Acorn src/All.agda src/acornInterruptEvaluation.c)
+add_library(Acorn src/All.agda src/acornInterruptEvaluation.c include/TinyHsFFI.h include/Future.h include/Acorn.h)
 add_library(Acorn::Acorn ALIAS Acorn)
 
 add_executable(AcornShell src/All.agda src/Main.hs)
@@ -68,7 +68,7 @@ target_include_directories(Acorn
                            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-install(FILES include/TinyHsFFI.h include/Acorn.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES include/TinyHsFFI.h include/Future.h include/Acorn.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # For some reason, on Windows, Interaction.o gets corrupted when copied into the library;
 # so it has to be included separately.

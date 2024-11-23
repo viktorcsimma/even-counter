@@ -16,22 +16,30 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(MainViewModel& viewModel, QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
     // This does _not_ destruct the view model; that is the task of the main function.
     ~MainWindow();
 
 public slots:
     void addButtonClicked();
     void asyncButtonClicked();
-    // Called by the asyncEnded() signal.
+    // Updates the UI according to the current state of the view model.
     // The signal-slot mechanism ensures
-    // that this always runs on the main thread.
-    void onAsyncEnded();
-
+    // that this always runs on the main thread
+    // when invoked by a signal.
+    void updateUI();
+    // Makes UI changes
+    // when the last iteration of an asynchronous increase finished.
+    // Invoked by lastIterationFinished().
+    void onLastIterationFinished();
 signals:
-    // Emitted by the calculation thread
-    // when it finishes.
-    void asyncEnded();
+    // Emitted when an iteration has finished
+    // and we wish to display the actual value of the counter.
+    void updateRequested();
+    // Emitted when the last iteration of an asynchronous increase has finished
+    // and we wish to restore the original state of the UI
+    // by invoking onLastIterationFinished.
+    void lastIterationFinished();
 
 private:
     Ui::MainWindow *ui;
@@ -39,12 +47,6 @@ private:
     // The view model behind the window.
     // This refers to the same object throughout the entire existence of the window;
     // mode changes are achieved by changing the HsCalcStateWrapper instance under the view model.
-    MainViewModel& viewModel;
-
-    // Called when trying to add an odd number.
-    // Gives the spin box a red color and a tooltip.
-    void setError();
-    // Returns the spin box to its normal state.
-    void unsetError();
+    MainViewModel *viewModel;
 };
 #endif // MAINWINDOW_H

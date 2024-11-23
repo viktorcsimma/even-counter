@@ -1,5 +1,4 @@
 #include "ViewModel/HsAppStateWrapper.hpp"
-#include "ViewModel/OddParameterException.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -20,13 +19,13 @@ TEST_CASE("HsAppStateWrapper") {
     }
 
     SECTION("trying to add odd numbers to the counter") {
-        REQUIRE_THROWS_AS(appStateWrapper.incrementWith(1), OddParameterException);
+        REQUIRE(!appStateWrapper.incrementWith(1));
         REQUIRE(0 == appStateWrapper.getCounterValue());
-        REQUIRE_THROWS_AS(appStateWrapper.incrementWith(9), OddParameterException);
+        REQUIRE(!appStateWrapper.incrementWith(9));
         REQUIRE(0 == appStateWrapper.getCounterValue());
-        REQUIRE_THROWS_AS(appStateWrapper.incrementWith(-1), OddParameterException);
+        REQUIRE(!appStateWrapper.incrementWith(-1));
         REQUIRE(0 == appStateWrapper.getCounterValue());
-        REQUIRE_THROWS_AS(appStateWrapper.incrementWith(-3), OddParameterException);
+        REQUIRE(!appStateWrapper.incrementWith(-3));
         REQUIRE(0 == appStateWrapper.getCounterValue());
     }
 }

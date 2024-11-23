@@ -17,12 +17,6 @@ int main(int argc, char *argv[])
     // before the hs_exit call.
     int exitCode;
     {
-        // By constructing the main view model,
-        // the HsCalcStateWrapper instance
-        // (and this way, the Haskell CalcState object)
-        // is also created.
-        MainViewModel mainViewModel;
-
         QApplication a(argc, argv);
 
         QTranslator translator;
@@ -35,7 +29,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        MainWindow w(mainViewModel);
+        // By constructing the main window,
+        // the MainViewModel and HsCalcStateWrapper instances
+        // (and this way, the Haskell CalcState object)
+        // are also created.
+        MainWindow w;
         w.show();
 
         exitCode = a.exec();

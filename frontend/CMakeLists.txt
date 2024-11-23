@@ -34,8 +34,6 @@ set(TS_FILES src/View/calc_en_GB.ts)
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(calc
         MANUAL_FINALIZATION
-        ""
-        assets/busy_indicator.gif
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET calc APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -129,10 +127,11 @@ else()
   message( FATAL_ERROR "Unsupported operating system: ${CMAKE_SYSTEM_NAME}" )
 endif()
 
-# copying assets
-file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+
+# if we have assets under an "assets" directory:
+# file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 # and installing them, if it is about an installation
-install(DIRECTORY assets DESTINATION ${CMAKE_BINARY_DIR})
+# install(DIRECTORY assets DESTINATION ${CMAKE_BINARY_DIR})
 
 install(TARGETS calc
     BUNDLE DESTINATION .

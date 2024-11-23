@@ -1,43 +1,17 @@
 #include "ViewModel/HsAppStateWrapper.hpp"
-#include "ViewModel/OddParameterException.hpp"
 #include "Acorn.h"
 
-HsAppStateWrapper::HsAppStateWrapper():
-    // an std::thread with an empty constructor does not really represent a thread
-    appStatePtr(initAppInt()), evaluationThread(), evaluating(false) {}
+HsAppStateWrapper::HsAppStateWrapper(): appStatePtr(initAppInteger()) {}
 
-int HsAppStateWrapper::getCounterValue() const {
-    return getCounterValueInt(appStatePtr);
-}
+// Of course, this is not too efficient,
+// but now we are simulating an environment
+// where the backend is fully in the Haskell runtime.
+int HsAppStateWrapper::getCounterValue() const {return getCounterValueInteger(appStatePtr);}
 
-void HsAppStateWrapper::incrementWith(int toAdd) {
-    if (0 != incrementWithInt(appStatePtr, toAdd)) {
-        throw OddParameterException();
-    } // else, we are fine
-}
-
-int HsAppStateWrapper::increaseFor(int duration) {
-    return increaseContinuouslyInt(appStatePtr, duration);
-}
-
-bool HsAppStateWrapper::interruptEvaluation() {
-    if (evaluating) {
-        // this is defined in Acorn.h
-        acornInterruptEvaluation();
-        // let's join it; that is safer
-        // hopefully, it ends quickly
-        evaluationThread.join();
-
-        evaluating = false;
-        return true;
-    } else return false;
+bool HsAppStateWrapper::incrementWith(int toAdd) {
+    return 0 == incrementInteger(appStatePtr, toAdd);
 }
 
 HsAppStateWrapper::~HsAppStateWrapper() {
-    if (evaluating) interruptEvaluation();
-    else if (evaluationThread.joinable()) evaluationThread.detach(); // we have to join or detach it before destruction
-
-    // there is no guarantee that a StablePtr is anything meaningful,
-    // so we have to free it from Haskell
-    destructAppInt(appStatePtr);
+    hs_free_stable_ptr(appStatePtr);
 }

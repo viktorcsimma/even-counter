@@ -10,27 +10,24 @@ extern "C" {
 
 // Initialises an AppState with base type Dyadic
 // and returns a StablePtr to it.
-extern HsStablePtr initAppInt(void);
+extern HsStablePtr initAppInteger(void);
 
 // Returns the counter value stored in the AppState.
-extern int getCounterValueInt(HsStablePtr appState);
+extern int getCounterValueInteger(HsStablePtr appState);
 
 // Increases the value of the counter with the given number.
 // Returns -1 if the value with which to increment is odd (in which case, it leaves the counter value unchanged);
 // and 0 on success.
-extern int incrementWithInt(HsStablePtr appState, int toAdd);
+extern int incrementInteger(HsStablePtr appState, int toAdd);
 
 // Increases the counter by 2 every second
 // for the given number of seconds
-// or until getting interrupted.
-// Returns -1 if interrupted and 0 otherwise.
-// This shows how interruptible calculations
+// or until getting interrupted,
+// writes a Future into the pointer specified,
+// that returns the value of the counter.
+// This shows how asynchronous calculations
 // can be implemented.
-extern int increaseContinuouslyInt(HsStablePtr appState, int duration);
-
-// Frees the StablePtr to the CalcState object,
-// as this could not be done from the C side.
-extern void destructAppInt(HsStablePtr calcState);
+extern void increaseContinuouslyIntegerAsyncC(HsStablePtr appState, int duration, HsPtr future);
 
 // This is written by ourselves in src/acornInterruptEvaluation.c.
 // It interrupts a running calculation

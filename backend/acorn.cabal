@@ -40,12 +40,14 @@ library
                        Logic,
                        AppState,
                        Interaction,
-                       Tool.ErasureProduct
+                       Tool.ErasureProduct,
+                       Tool.Future
   exposed-modules:     All,
                        Logic,
                        AppState,
                        Interaction,
                        Tool.ErasureProduct,
+                       Tool.Future,
                        Platform
   if os(windows)
     autogen-modules:   Platform.Win32

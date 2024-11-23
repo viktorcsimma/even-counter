@@ -13,10 +13,15 @@ import System.Win32.Event
 import System.Win32.Process (sleep)
 import System.Win32.File (closeHandle)
 import System.Win32.Types (HANDLE, BOOL)
+import Foreign.C.Types (CInt)
+
+-- It will be CInt so that it can be easily got as a parameter.
+type SemName = CInt
 
 -- Opens a new thread which is going to write its result into an MVar.
 -- Also opens a "watcher thread"
--- which is going to wait on an event called "AcornInterruptEvent"
+-- which is going to wait on an event
+-- (with a name generated from the SemName parameter)
 -- and if it is triggered, stops the calculation
 -- and writes a Nothing into the MVar.
 -- If the calculation runs successfully (so with Just sth),
@@ -25,10 +30,12 @@ import System.Win32.Types (HANDLE, BOOL)
 -- it does nothing.
 -- The event is created by the watcher thread itself;
 -- the "outer world" only needs to open it.
-runInterruptibly :: IO a -> a -> IO a
-runInterruptibly action resultOnInterrupt = do
+runInterruptibly :: SemName -> IO a -> IO a -> IO a
+runInterruptibly tid action resultOnInterrupt = do
   (mVar :: MVar (Maybe a)) <- newEmptyMVar
   childThreadId <- forkIO (putMVar mVar =<< (Just <$> action))
+
+  let eventName = show tid
 
   -- We create the event here so that
   -- we can be sure it exists
@@ -38,7 +45,7 @@ runInterruptibly action resultOnInterrupt = do
   -- But the handle will be closed by the watcher thread
   -- as it will use it at last.
   -- This is an auto-reset event.
-  eventHandle <- createEvent Nothing False False "AcornInterruptEvent"
+  eventHandle <- createEvent Nothing False False eventName
 
   watcherThreadId <- forkIO $ do
     waitResult <- threadWaitForSingleObject eventHandle

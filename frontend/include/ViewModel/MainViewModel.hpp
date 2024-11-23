@@ -2,7 +2,10 @@
 #define MAIN_VIEW_MODEL_HPP_
 
 #include <string>
+#include <mutex>
+#include <thread>
 
+#include "Future.hpp"
 #include "HsAppStateWrapper.hpp"
 
 // A view model containing different elements
@@ -15,53 +18,66 @@ class MainViewModel {
         HsAppStateWrapper* appStateWrapper;
         std::string displayedText;
 
+        // Points to the actual interruptible calculation, if any.
+        Future<int>* actualFuture;
+
+        // A mutex embedded in the object.
+        std::mutex mutex;
+
+        // The thread on which we will run the get() calls and the triggers.
+        std::thread triggerThread;
+
+        // Whether there has been an error we want to sign to the view
+        // (i.e. because the value with which to increment the counter has been odd).
+        bool _hasError;
+
     public:
         // This also automatically constructs a HsAppStateWrapper
         // and stores its pointer.
-        MainViewModel(): appStateWrapper(new HsAppStateWrapper()), displayedText(std::to_string(appStateWrapper->getCounterValue())) {}
+        MainViewModel();
 
         // Executes an "add" command with the given number as a parameter.
-        // Throws an OddParameterException if the parameter given is odd.
-        void incrementWith(int toAdd) {
-            appStateWrapper->incrementWith(toAdd);
-            this->displayedText = std::to_string(this->appStateWrapper->getCounterValue());
-        }
+        // Sets hasError if the parameter given is odd.
+        void incrementWith(int toAdd);
 
         // Whether there is an asynchronous calculation running.
-        bool isEvaluating() const {return appStateWrapper->isEvaluating();}
+        bool isEvaluating() const {return nullptr != actualFuture;}
 
-        // Begins a continuous increasing of the counter
-        // by two every second;
-        // for the given period (in seconds)
-        // or until interrupted.
-        // Executes onFinished if finished orderly
-        // or onInterrupted if interrupted.
-        template<class F, class G>
-        void increaseForAsync(int period, F onFinished, G onInterrupted) {
-            appStateWrapper->increaseForAsync(period, [=](int result) {
-                this->displayedText = std::to_string(this->appStateWrapper->getCounterValue());
-                if (0 == result) {
-                    onFinished();
-                } else {
-                    this->displayedText += " (interrupted)";
-                    onInterrupted();
-                }
-            });
-        }
+        // Whether there has been an error we want to sign to the view
+        // (i.e. because the value with which to increment the counter has been odd).
+        bool hasError() const {return _hasError;}
 
-        // Interrupts the current asynchronous computation, joins it until it stops gracefully
-        // and returns true if there was one;
-        // returns false otherwise.
-        bool interruptEvaluation() {return appStateWrapper->interruptEvaluation();}
+        // Increases the counter asynchronously:
+        // waits for a single second,
+        // then makes an increment of two.
+        // Does so via the Future construct
+        // to demonstrate its capabilities.
+        // **Note:** throws if called while an asynchronous calculation is already in progress.
+        // Returns immediately with the Future created,
+        // which will contain the final state of the counter.
+        void incrementAsync();
+
+        // Starts a calculation in which
+        // the counter is incremented by 2 every second,
+        // until interrupted or for the duration given.
+        // Sets hasError to false.
+        // triggersOnIteration run on the conclusion of each iteration;
+        // triggersOnFinish run only on the conclusion of the final one.
+        void incrementManyTimesAsync(int duration, std::vector<std::function<void(int)>> triggersOnIteration = std::vector<std::function<void(int)>>(0),
+                                                   std::vector<std::function<void(int)>> triggersOnFinish = std::vector<std::function<void(int)>>(0));
+
+        // Interrupts the asynchronous calculation, if any.
+        // Returns false if there has not been any.
+        bool interrupt();
 
         // This also frees the HsAppStateWrapper.
-        ~MainViewModel() {delete appStateWrapper;}
+        ~MainViewModel();
 
         // Getters returning constant references.
         const std::string& getDisplayedText() const {return displayedText;}
 
         // We delete the copy constructor and the assignment operator.
-        MainViewModel(const MainViewModel& temp_obj) = delete; 
+        MainViewModel(const MainViewModel& temp_obj) = delete;
         MainViewModel& operator=(const MainViewModel& temp_obj) = delete;
 };
 

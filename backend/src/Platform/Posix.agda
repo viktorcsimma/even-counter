@@ -11,14 +11,15 @@ import Control.Exception (try, IOException)
 import System.Posix.Signals
 import System.Posix.Semaphore
 import System.Posix.Files (stdFileMode)
+import Foreign.C.Types (CInt)
 
-sEMAPHORE_NAME :: String
-sEMAPHORE_NAME = "AcornInterruptSemaphore"
+-- It will be CInt so that it can be easily got as a parameter.
+type SemName = CInt
 
 -- Opens a new thread which is going to write its result into an MVar.
 -- Also opens a "watcher thread"
 -- which is going to wait on a POSIX named semaphore
--- called "AcornInterruptSemaphore"
+-- with a name generated from the SemName parameter
 -- and if it is unlocked, stops the calculation
 -- and writes a Nothing into the MVar.
 -- If the calculation runs successfully (so with Just sth),
@@ -29,10 +30,12 @@ sEMAPHORE_NAME = "AcornInterruptSemaphore"
 -- the "outer world" only needs to open it.
 -- We also set a signal handler for SIGINT
 -- which unlocks the semaphore.
-runInterruptibly :: IO a -> a -> IO a
-runInterruptibly action resultOnInterrupt = do
+runInterruptibly :: SemName -> IO a -> IO a -> IO a
+runInterruptibly tid action resultOnInterrupt = do
   (mVar :: MVar (Maybe a)) <- newEmptyMVar
   childThreadId <- forkIO (putMVar mVar =<< (Just <$> action))
+
+  let semaphoreName = show tid
 
   -- We create the semaphore here so that
   -- we can be sure it exists
@@ -41,14 +44,14 @@ runInterruptibly action resultOnInterrupt = do
   -- then the other one trying to access it).
   -- But it will be removed by the watcher thread
   -- as it will use it at last.
-  semaphore <- semOpen sEMAPHORE_NAME
+  semaphore <- semOpen semaphoreName
                        (OpenSemFlags True False)
                        stdFileMode
                        0
 
   watcherThreadId <- forkIO $ do
     -- an auto-reset event
-    semaphore <- semOpen sEMAPHORE_NAME
+    semaphore <- semOpen semaphoreName
                          (OpenSemFlags False False)
                          -- these are ignored
                          0 0
@@ -58,14 +61,14 @@ runInterruptibly action resultOnInterrupt = do
     -- this will do nothing if the MVar has already been filled
     wasEmpty <- tryPutMVar mVar Nothing
     if wasEmpty
-      then killThread childThreadId >> semUnlink sEMAPHORE_NAME
-      else semUnlink sEMAPHORE_NAME
+      then killThread childThreadId >> semUnlink semaphoreName
+      else semUnlink semaphoreName
 
   oldHandler <- installHandler
     sigINT
     -- it should not fail if the semaphore does not exist anymore
     (CatchOnce $
-       ((try :: IO () -> IO (Either IOException ())) $ semOpen sEMAPHORE_NAME (OpenSemFlags False False) 0 0 >>= semPost) >> return ())
+       ((try :: IO () -> IO (Either IOException ())) $ semOpen semaphoreName (OpenSemFlags False False) 0 0 >>= semPost) >> return ())
     Nothing
 
   maybeResult <- readMVar mVar
@@ -79,6 +82,6 @@ runInterruptibly action resultOnInterrupt = do
       return result
     -- in this case, the watcher thread has already run
     -- and stopped the calculation thread
-    Nothing -> return resultOnInterrupt
+    Nothing -> resultOnInterrupt
 
 #-}

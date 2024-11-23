@@ -5,25 +5,12 @@
 
 module Logic where
 
-open import Agda.Builtin.Unit
-open import Agda.Builtin.Bool
 open import Agda.Builtin.Nat hiding (_+_; _*_; _-_)
-open import Agda.Builtin.Int
-open import Agda.Builtin.Equality
+open import Agda.Builtin.Int renaming (Int to Integer)
 
-open import Haskell.Prim.Integer
-open import Haskell.Prim.Either
-open import Agda.Builtin.FromString     -- so that we can use string literals
-open import Haskell.Prim.String
-open import Haskell.Prim using (if_then_else_)
-
--- and this for using Num operators with integers too
-open import Haskell.Prim.Num
+open import Haskell.Prelude
 
 open import Tool.ErasureProduct
-
--- The empty type (false statement).
-data ⊥ : Set where
 
 -- A statement that a given natural is even.
 @0 EvenNat : Nat -> Set
@@ -32,9 +19,9 @@ EvenNat (suc zero) = ⊥
 EvenNat (suc (suc n)) = EvenNat n
 
 -- A statement that a given integer is even.
-@0 EvenInt : Int -> Set
-EvenInt (pos n) = EvenNat n
-EvenInt (negsuc n) = EvenNat (suc n)
+@0 EvenInteger : Integer -> Set
+EvenInteger (pos n) = EvenNat n
+EvenInteger (negsuc n) = EvenNat (suc n)
 
 -- A proof that the sum of two even naturals
 -- is also even.
@@ -60,7 +47,7 @@ symm refl = refl
 
 -- A proof that the sum of two even integers
 -- is also even.
-@0 intSumIsEven : (a b : Int) -> @0 {EvenInt a} -> @0 {EvenInt b} -> EvenInt (a + b)
+@0 intSumIsEven : (a b : Integer) -> @0 {EvenInteger a} -> @0 {EvenInteger b} -> EvenInteger (a + b)
 intSumIsEven (pos m) (pos n) {em} {en} = natSumIsEven m n {em} {en}
 -- here, the pattern matchings in the definitions of addInteger and ltNat might help
 intSumIsEven (pos zero) (negsuc (suc n)) {_} {en} = en
@@ -81,8 +68,8 @@ private
   -- A function calculating whether a given natural is even
   -- and returning a Bool.
   isEvenNat : Nat -> Bool
-  isEvenNat zero = true
-  isEvenNat (suc zero) = false
+  isEvenNat zero = True
+  isEvenNat (suc zero) = False
   isEvenNat (suc (suc n)) = isEvenNat n
   {-# FOREIGN AGDA2HS
   -- Here, it is better to resort to
@@ -94,24 +81,24 @@ private
 
   -- A function calculating whether a given integer is even
   -- and returning a Bool.
-  isEvenInt : Int -> Bool
-  isEvenInt (pos n) = isEvenNat n
-  isEvenInt (negsuc n) = isEvenNat (suc n)
+  isEvenInteger : Integer -> Bool
+  isEvenInteger (pos n) = isEvenNat n
+  isEvenInteger (negsuc n) = isEvenNat (suc n)
   {-# FOREIGN AGDA2HS
   -- Similarly.
-  isEvenInt :: Integer -> Bool
-  isEvenInt = even
+  isEvenInteger :: Integer -> Bool
+  isEvenInteger = even
   #-}
 
-  -- A proof that EvenNat x is equivalent to isEvenNat x being true.
-  @0 equivToEvenNat : {x : Nat} -> isEvenNat x ≡ true -> EvenNat x
+  -- A proof that EvenNat x is equivalent to isEvenNat x being True.
+  @0 equivToEvenNat : {x : Nat} -> isEvenNat x ≡ True -> EvenNat x
   equivToEvenNat {zero} it = tt
   equivToEvenNat {suc (suc x)} it = equivToEvenNat {x} it
 
-  -- A proof that EvenInt x is equivalent to isEvenInt x being true.
-  @0 equivToEvenInt : {x : Int} -> isEvenInt x ≡ true -> EvenInt x
-  equivToEvenInt {pos n} it = equivToEvenNat {n} it
-  equivToEvenInt {negsuc (suc n)} it = equivToEvenNat {n} it
+  -- A proof that EvenInteger x is equivalent to isEvenInteger x being True.
+  @0 equivToEvenInteger : {x : Integer} -> isEvenInteger x ≡ True -> EvenInteger x
+  equivToEvenInteger {pos n} it = equivToEvenNat {n} it
+  equivToEvenInteger {negsuc (suc n)} it = equivToEvenNat {n} it
 
   -- Adding natural numbers that are guaranteed to be even;
   -- returning the result along with a proof that it is also even.
@@ -121,20 +108,20 @@ private
 
   -- Adding integers that are guaranteed to be even;
   -- returning the result along with a proof that it is also even.
-  addEvenInts : (x y : Int) -> @0 {EvenInt x} -> @0 {EvenInt y} -> Σ0 Int EvenInt
-  addEvenInts x y {ex} {ey} = x + y :&: intSumIsEven x y {ex} {ey}
-  {-# COMPILE AGDA2HS addEvenInts #-}
+  addEvenIntegers : (x y : Integer) -> @0 {EvenInteger x} -> @0 {EvenInteger y} -> Σ0 Integer EvenInteger
+  addEvenIntegers x y {ex} {ey} = x + y :&: intSumIsEven x y {ex} {ey}
+  {-# COMPILE AGDA2HS addEvenIntegers #-}
 
 -- Returns an error message in Left if either of the two parameters is odd;
 -- otherwise returns the result in Right.
 -- This is what we are going to call from Haskell.
 -- The if_then_else_ construction of agda2hs allows us
--- to use instances of b ≡ true or b ≡ false in our proofs
+-- to use instances of b ≡ True or b ≡ False in our proofs
 -- (but we need those lambdas).
-eitherAddInt : Int -> Int -> Either String Int
-eitherAddInt x y = if (isEvenInt x) then (λ {{isTrue₁}} → 
-                      if (isEvenInt y) then (λ {{isTrue₂}} →
-                        Right (proj₁ (addEvenInts x y {equivToEvenInt {x} isTrue₁} {equivToEvenInt {y} isTrue₂}))
+eitherAddInteger : Integer -> Integer -> Either String Integer
+eitherAddInteger x y = if (isEvenInteger x) then (λ {{isTrue₁}} →
+                      if (isEvenInteger y) then (λ {{isTrue₂}} →
+                        Right (proj₁ (addEvenIntegers x y {equivToEvenInteger {x} isTrue₁} {equivToEvenInteger {y} isTrue₂}))
                       ) else Left "second parameter is odd"
                   ) else Left "first parameter is odd"
-{-# COMPILE AGDA2HS eitherAddInt #-}
+{-# COMPILE AGDA2HS eitherAddInteger #-}

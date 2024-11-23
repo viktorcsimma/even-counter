@@ -16,6 +16,7 @@ import Tool.ErasureProduct
 import Tool.Cheat
 import Tool.PropositionalEquality
 import Tool.Relation
+import Tool.Future
 -- this does not have a .agda file
 -- import Platform
 import Platform.Win32
@@ -35,6 +36,7 @@ import Interaction
 import Logic
 
 import Tool.ErasureProduct
+import Tool.Future
 -- import Tool.Cheat                    -- this would be empty
 -- import Tool.PropositionalEquality    -- this would be empty
 import Platform

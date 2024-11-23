@@ -12,9 +12,7 @@ import Text.Read (readMaybe)
 
 import AppState
 import Interaction
-
-import Control.Concurrent (myThreadId)
-import Control.DeepSeq
+import Tool.Future
 
 -- Command keywords.
 aDD_KEYWORD :: String
@@ -27,7 +25,7 @@ eXIT_KEYWORD = "exit"
 main :: IO ()
 main = do
   putStrLn $ "Welcome.\nType \"" ++ aDD_KEYWORD ++ " x\" to add an even number x to the counter; \"" ++ iNCFOR_KEYWORD ++ " n\" to increment continuously for n seconds; or \"" ++ eXIT_KEYWORD ++ "\" to exit."
-  appState <- zeroAppState
+  appState <- (MkAppState <$> newIORef 0)
   prompt appState
 
 -- the second parameter is the precision to apply
@@ -38,18 +36,17 @@ prompt appState = do
   hFlush stdout   -- so that it gets printed immediately
   command <- (unpack . strip . pack) <$> getLine
   if command == eXIT_KEYWORD
-  then do {putStrLn "Bye."; return ()}
-  else if (aDD_KEYWORD ++ " ") `isPrefixOf` command
+  then do {putStrLn "Bye."; return ()}  else if (aDD_KEYWORD ++ " ") `isPrefixOf` command
   then do
     let num = (unpack . strip . pack) $ drop (length aDD_KEYWORD + 1) command
     case (readMaybe num :: Maybe Integer) of
       Just parsedInput -> do
-        result <- incrementWithInt' appState parsedInput
-        if -1 == result
-        then do
-          putStrLn "Value provided was not even. Try again."
-          prompt appState
-        else prompt appState
+        eitherStringResult <- incrementWithInteger' appState parsedInput
+        case eitherStringResult of
+          Left err -> do
+            putStrLn err
+            prompt appState
+          _ -> prompt appState
       Nothing -> do
         putStrLn "Invalid syntax for :add – have you written the number correctly?"
         prompt appState
@@ -58,9 +55,10 @@ prompt appState = do
     let num = (unpack . strip . pack) $ drop (length iNCFOR_KEYWORD + 1) command
     if all isDigit num
     then do
-      result <- increaseContinuouslyInt' appState (read num)
-      if -1 == result then do {putStrLn "Interrupted."; prompt appState}
-      else prompt appState
+      either <- getFromFuture =<< increaseContinuouslyIntegerAsync appState (read num)
+      case either of
+        Left err -> do {putStrLn err; prompt appState}
+        _ -> prompt appState
     else do
       putStrLn "Invalid syntax for :incfor – have you written the number correctly?"
       prompt appState
