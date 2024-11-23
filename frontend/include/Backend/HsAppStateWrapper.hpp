@@ -2,7 +2,7 @@
 #define HS_APP_STATE_WRAPPER_HPP_
 
 #include "TinyHsFFI.h"
-#include "ViewModel/Future.hpp"
+#include "Future.hpp"
 #include "Acorn.h"
 
 /**

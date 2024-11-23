@@ -60,6 +60,7 @@ bool MainViewModel::interrupt() {
 
 MainViewModel::~MainViewModel() {
     interrupt();
+    if (triggerThread.joinable()) triggerThread.join();
     delete appStateWrapper;
 }
 

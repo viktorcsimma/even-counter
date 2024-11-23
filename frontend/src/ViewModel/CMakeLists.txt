@@ -1,8 +1,5 @@
 target_sources(
     calc
-    PRIVATE HsAppStateWrapper.cpp Future.cpp MainViewModel.cpp
+    PRIVATE MainViewModel.cpp
 )
-target_sources(
-    test
-    PRIVATE HsAppStateWrapper.cpp
-)
+

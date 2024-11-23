@@ -1,4 +1,4 @@
-#include "ViewModel/HsAppStateWrapper.hpp"
+#include "Backend/HsAppStateWrapper.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 

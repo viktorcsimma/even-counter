@@ -5,8 +5,8 @@
 #include <mutex>
 #include <thread>
 
-#include "Future.hpp"
-#include "HsAppStateWrapper.hpp"
+#include "Backend/Future.hpp"
+#include "Backend/HsAppStateWrapper.hpp"
 
 // A view model containing different elements
 // which the main window will need.

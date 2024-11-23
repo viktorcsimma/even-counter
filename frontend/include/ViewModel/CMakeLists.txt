@@ -1,8 +1,8 @@
 target_sources(
     calc
-    PRIVATE HsAppStateWrapper.hpp MainViewModel.hpp Future.hpp AsyncCalculationAlreadyInProgressException.hpp
+    PRIVATE MainViewModel.hpp AsyncCalculationAlreadyInProgressException.hpp
 )
 target_sources(
     test
-    PRIVATE HsAppStateWrapper.hpp MainViewModel.hpp
+    PRIVATE MainViewModel.hpp
 )
