@@ -3,7 +3,7 @@
 
 #include "TinyHsFFI.h"
 #include "Future.hpp"
-#include "Acorn.h"
+#include "Interaction.h"
 
 /**
  * A wrapper class containing
