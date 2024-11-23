@@ -1,10 +1,10 @@
 cabal-version:       2.2
-name:                skeleton
+name:                even-counter
 version:             0.1
-synopsis:            A skeleton project to get started with using the Agda SDK.
+synopsis:            A demo program for the Agda SDK.
 
 -- Ouch... these need to be listed.
-extra-source-files:  skeleton.agda-lib,
+extra-source-files:  even-counter.agda-lib,
                      src/*.agda
                      src/Platform/*.agda,
                      src/Test/*.agda,
@@ -69,7 +69,7 @@ executable Shell
                        containers,
                        text,
                        deepseq >= 1.4,
-                       skeleton
+                       even-counter
   if os(windows)
     build-depends:     Win32 >= 2.12
   elif os(linux) || os(darwin)
@@ -89,6 +89,6 @@ test-suite QuickCheckTests
                        containers,
                        text,
                        deepseq >= 1.4,
-                       skeleton,
+                       even-counter,
                        QuickCheck >= 2.14
   default-language:    GHC2021

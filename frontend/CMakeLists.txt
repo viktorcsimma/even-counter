@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.16)
 
-project(SkeletonGUI)
+project(EvenCounterGUI)
 set(PROJECT_VERSION 0.1)
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT-NAME_VERSION_MINOR 1)
@@ -10,7 +10,7 @@ include(GNUInstallDirs)
 find_package(Catch2 3 REQUIRED)
 
 # the name of the backend project
-set(BACKEND_NAME Skeleton)
+set(BACKEND_NAME EvenCounter)
 
 # if this is compiled from the common parent project,
 # we can simply add a dependency (see later)

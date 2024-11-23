@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 # The name of the project.
 
 # the language is given so that GNUInstallDirs knows where to install
-project(Skeleton)
+project(EvenCounter)
 
 add_library(${PROJECT_NAME} src/All.agda src/interruptEvaluation.c include/TinyHsFFI.h include/Future.h include/Interaction.h)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

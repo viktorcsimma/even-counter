@@ -1,4 +1,4 @@
-name: skeleton
+name: even-counter
 depend:
   agda2hs
 include: src
