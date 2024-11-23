@@ -41,7 +41,7 @@ prompt appState = do
     let num = (unpack . strip . pack) $ drop (length aDD_KEYWORD + 1) command
     case (readMaybe num :: Maybe Integer) of
       Just parsedInput -> do
-        eitherStringResult <- incrementWithInteger' appState parsedInput
+        eitherStringResult <- incrementInteger' appState parsedInput
         case eitherStringResult of
           Left err -> do
             putStrLn err
