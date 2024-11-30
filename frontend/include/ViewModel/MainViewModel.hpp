@@ -12,10 +12,12 @@
 // which the main window will need.
 class MainViewModel {
     private:
-        // This will be a pointer;
-        // it needs to be swappable
-        // and that is easier to do this way.
-        HsAppStateWrapper* appStateWrapper;
+        // This will be a containment;
+        // it only has the size of a pointer
+        // and no swapping is needed
+        // in the lifetime of the view model.
+        HsAppStateWrapper appStateWrapper;
+
         std::string displayedText;
 
         // Points to the actual interruptible calculation, if any.

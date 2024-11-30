@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    // This does _not_ destruct the view model; that is the task of the main function.
+    // This also destroys the view model.
     ~MainWindow();
 
 public slots:

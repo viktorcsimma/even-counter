@@ -2,20 +2,20 @@
 #include "ViewModel/AsyncCalculationAlreadyInProgressException.hpp"
 
 MainViewModel::MainViewModel():
-    appStateWrapper(new HsAppStateWrapper()), displayedText(std::to_string(appStateWrapper->getCounterValue())),
+    appStateWrapper(), displayedText(std::to_string(appStateWrapper.getCounterValue())),
     actualFuture(nullptr), _hasError(false) {}
 
 void MainViewModel::incrementWith(int toAdd) {
     std::unique_lock lock(mutex);
-    _hasError = !(appStateWrapper->incrementWith(toAdd));
-    displayedText = std::to_string(appStateWrapper->getCounterValue());
+    _hasError = !(appStateWrapper.incrementWith(toAdd));
+    displayedText = std::to_string(appStateWrapper.getCounterValue());
 }
 
 void MainViewModel::incrementAsync() {
     _hasError = false;
     std::unique_lock lock(mutex);
     if (nullptr != actualFuture) throw AsyncCalculationAlreadyInProgressException();
-    actualFuture = new Future<int>(appStateWrapper->increaseContinuouslyAsync(1));
+    actualFuture = new Future<int>(appStateWrapper.increaseContinuouslyAsync(1));
 }
 
 void MainViewModel::incrementManyTimesAsync(int duration, std::vector<std::function<void(int)>> triggersOnIteration,
@@ -61,7 +61,6 @@ bool MainViewModel::interrupt() {
 MainViewModel::~MainViewModel() {
     interrupt();
     if (triggerThread.joinable()) triggerThread.join();
-    delete appStateWrapper;
 }
 
 
